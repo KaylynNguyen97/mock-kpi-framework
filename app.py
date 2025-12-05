@@ -1,10 +1,10 @@
-# app.py - COMPLETE VERSION FOR QUICK TESTING (Simulated Data) - FIXED
+# app.py - FIXED VERSION USING PLOTLY
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -53,12 +53,6 @@ st.markdown("""
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    .positive-change {
-        color: #10B981;
-    }
-    .negative-change {
-        color: #EF4444;
-    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -101,9 +95,10 @@ with st.sidebar:
     if st.button("🔄 Refresh Data"):
         st.rerun()
 
+# Helper function for data loading
+@st.cache_data
 def load_simulated_data():
     """Generate simulated data for demonstration"""
-    st.sidebar.info("📊 Using simulated data for demonstration")
     
     # Generate dates
     dates = pd.date_range(start='2023-01-01', end='2024-01-01', freq='M')
@@ -244,15 +239,9 @@ def load_simulated_data():
         'Innovation_Leadership_Index': innovation_df
     }
 
-# Load data function
-@st.cache_data(ttl=3600)
-def load_data():
-    """Load simulated data for quick testing"""
-    return load_simulated_data()
-
 # Load data
 with st.spinner("Loading data..."):
-    data = load_data()
+    data = load_simulated_data()
 
 # Extract dataframes
 brand_health_df = data.get('Brand_Health_Index', pd.DataFrame())
@@ -264,10 +253,6 @@ partner_mentions_df = data.get('Partner_Brand_Mentions', pd.DataFrame())
 creator_nps_df = data.get('Creator_Lab_NPS', pd.DataFrame())
 innovation_df = data.get('Innovation_Leadership_Index', pd.DataFrame())
 
-# Set up plotting style - FIXED: Use a simple style
-plt.style.use('ggplot')
-sns.set_style("whitegrid")
-
 # EXECUTIVE SUMMARY DASHBOARD
 def show_executive_summary():
     st.markdown('<h2 class="sub-header">📈 Executive Summary</h2>', unsafe_allow_html=True)
@@ -276,71 +261,71 @@ def show_executive_summary():
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         avg_score = brand_health_df['Composite_Brand_Health_Score'].mean()
-        st.markdown(f'<div class="kpi-value">{avg_score:.1f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Brand Health Index</div>', unsafe_allow_html=True)
-        st.caption("↗️ +8.1% YoY")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Brand Health Index",
+            value=f"{avg_score:.1f}",
+            delta="+8.1% YoY"
+        )
     
     with col2:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         total_mqls = mql_df['MQL_Count'].sum()
-        st.markdown(f'<div class="kpi-value">{total_mqls:,.0f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Total MQLs</div>', unsafe_allow_html=True)
-        st.caption("↗️ +15% vs last period")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Total MQLs",
+            value=f"{total_mqls:,.0f}",
+            delta="+15% vs last period"
+        )
     
     with col3:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         avg_nps = product_nps_df['NPS_Score'].mean()
-        st.markdown(f'<div class="kpi-value">{avg_nps:.0f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Product NPS</div>', unsafe_allow_html=True)
-        st.caption("↗️ +12 points")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Product NPS",
+            value=f"{avg_nps:.0f}",
+            delta="+12 points"
+        )
     
     with col4:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         avg_innovation = innovation_df['Innovation_Leadership_Index'].mean()
-        st.markdown(f'<div class="kpi-value">{avg_innovation:.1f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Innovation Index</div>', unsafe_allow_html=True)
-        st.caption("↗️ +7.2%")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Innovation Index",
+            value=f"{avg_innovation:.1f}",
+            delta="+7.2%"
+        )
     
     # Second row of metrics
     col5, col6, col7, col8 = st.columns(4)
     
     with col5:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         overall_rate = (mql_df['MQL_Count'].sum() / mql_df['Total_Leads'].sum() * 100)
-        st.markdown(f'<div class="kpi-value">{overall_rate:.1f}%</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">MQL Conversion</div>', unsafe_allow_html=True)
-        st.caption("↗️ +2.3%")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="MQL Conversion",
+            value=f"{overall_rate:.1f}%",
+            delta="+2.3%"
+        )
     
     with col6:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         total_mentions = partner_mentions_df['Mention_Count'].sum()
-        st.markdown(f'<div class="kpi-value">{total_mentions:,.0f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Brand Mentions</div>', unsafe_allow_html=True)
-        st.caption("↗️ +42%")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Brand Mentions",
+            value=f"{total_mentions:,.0f}",
+            delta="+42%"
+        )
     
     with col7:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         avg_partner_nps = partner_nps_df['NPS_Score'].mean()
-        st.markdown(f'<div class="kpi-value">{avg_partner_nps:.0f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Partner NPS</div>', unsafe_allow_html=True)
-        st.caption("↗️ +9 points")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Partner NPS",
+            value=f"{avg_partner_nps:.0f}",
+            delta="+9 points"
+        )
     
     with col8:
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         avg_creator_nps = creator_nps_df['NPS_Score'].mean()
-        st.markdown(f'<div class="kpi-value">{avg_creator_nps:.0f}</div>', unsafe_allow_html=True)
-        st.markdown('<div class="kpi-label">Creator NPS</div>', unsafe_allow_html=True)
-        st.caption("↗️ +11 points")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(
+            label="Creator NPS",
+            value=f"{avg_creator_nps:.0f}",
+            delta="+11 points"
+        )
     
     # Charts Row
     st.markdown('<h3 class="sub-header">Performance Trends</h3>', unsafe_allow_html=True)
@@ -349,30 +334,27 @@ def show_executive_summary():
     
     with col1:
         st.subheader("Brand Health Trend")
-        fig, ax = plt.subplots(figsize=(10, 4))
-        brand_health_summary = brand_health_df.groupby('Date')['Composite_Brand_Health_Score'].mean().reset_index()
-        ax.plot(range(len(brand_health_summary)), brand_health_summary['Composite_Brand_Health_Score'], 
-               marker='o', linewidth=2, color='#3498db')
-        ax.set_xlabel('Quarter')
-        ax.set_ylabel('Composite Score')
-        ax.set_xticks(range(len(brand_health_summary)))
-        ax.set_xticklabels(brand_health_summary['Date'], rotation=45)
-        ax.grid(True, alpha=0.3)
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig = px.line(brand_health_df, x='Date', y='Composite_Brand_Health_Score',
+                     markers=True, line_shape='linear')
+        fig.update_layout(
+            xaxis_title='Quarter',
+            yaxis_title='Composite Score',
+            height=400
+        )
+        st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         st.subheader("MQL Conversion Trend")
-        fig, ax = plt.subplots(figsize=(10, 4))
         conversion_trend = mql_df.groupby('Date')['Conversion_Rate'].mean().reset_index()
-        ax.plot(conversion_trend['Date'], conversion_trend['Conversion_Rate']*100, 
-               marker='o', linewidth=2, color='#e67e22')
-        ax.set_xlabel('Month')
-        ax.set_ylabel('Conversion Rate (%)')
-        ax.grid(True, alpha=0.3)
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig = px.line(conversion_trend, x='Date', y='Conversion_Rate',
+                     markers=True, line_shape='linear')
+        fig.update_layout(
+            xaxis_title='Month',
+            yaxis_title='Conversion Rate (%)',
+            yaxis_tickformat='.1%',
+            height=400
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 # MARKET POSITION DASHBOARD
 def show_market_position_dashboard():
@@ -385,101 +367,110 @@ def show_market_position_dashboard():
         
         with col1:
             st.subheader("Brand Health Index Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
-            brand_health_summary = brand_health_df.groupby('Date')['Composite_Brand_Health_Score'].mean().reset_index()
-            ax.plot(range(len(brand_health_summary)), brand_health_summary['Composite_Brand_Health_Score'], 
-                   marker='o', linewidth=2, color='#3498db')
-            ax.set_xlabel('Quarter')
-            ax.set_ylabel('Composite Score')
-            ax.set_xticks(range(len(brand_health_summary)))
-            ax.set_xticklabels(brand_health_summary['Date'], rotation=45)
-            ax.grid(True, alpha=0.3)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(brand_health_df, x='Date', y='Composite_Brand_Health_Score',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Quarter',
+                yaxis_title='Composite Score',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Lead Score Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             lead_score_trend = mql_df.groupby('Date')['Lead_Score_Average'].mean().reset_index()
-            ax.plot(lead_score_trend['Date'], lead_score_trend['Lead_Score_Average'], 
-                   marker='o', linewidth=2, color='#9b59b6')
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Average Lead Score')
-            ax.grid(True, alpha=0.3)
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(lead_score_trend, x='Date', y='Lead_Score_Average',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Month',
+                yaxis_title='Average Lead Score',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab2:
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Digital Brand Presence by Market")
-            fig, ax = plt.subplots(figsize=(10, 5))
             digital_presence_summary = digital_presence_df.groupby('Market')['Composite_Digital_Presence_Score'].mean().reset_index()
-            colors = ['#2ecc71', '#3498db', '#e74c3c']
-            bars = ax.bar(digital_presence_summary['Market'], 
-                       digital_presence_summary['Composite_Digital_Presence_Score'],
-                       color=colors, alpha=0.8)
-            ax.set_ylabel('Composite Score')
-            ax.set_ylim(70, 90)
-            
-            for bar in bars:
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 0.5,
-                       f'{height:.1f}', ha='center', va='bottom', fontsize=10)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.bar(digital_presence_summary, x='Market', y='Composite_Digital_Presence_Score',
+                        color='Market', text_auto='.1f')
+            fig.update_layout(
+                yaxis_title='Composite Score',
+                height=400,
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("MQL Volume by Month")
-            fig, ax = plt.subplots(figsize=(10, 5))
             mql_volume = mql_df.groupby('Date').agg({
                 'Total_Leads': 'sum',
                 'MQL_Count': 'sum'
             }).reset_index()
             
-            x = range(len(mql_volume))
-            width = 0.35
-            ax.bar([i - width/2 for i in x], mql_volume['Total_Leads'], width, 
-                  label='Total Leads', alpha=0.7)
-            ax.bar([i + width/2 for i in x], mql_volume['MQL_Count'], width, 
-                  label='MQLs', alpha=0.7)
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Count')
-            ax.set_xticks(x)
-            ax.set_xticklabels([str(d)[:7] for d in mql_volume['Date']], rotation=45)
-            ax.legend()
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=mql_volume['Date'],
+                y=mql_volume['Total_Leads'],
+                name='Total Leads',
+                marker_color='lightblue'
+            ))
+            fig.add_trace(go.Bar(
+                x=mql_volume['Date'],
+                y=mql_volume['MQL_Count'],
+                name='MQLs',
+                marker_color='orange'
+            ))
+            fig.update_layout(
+                barmode='group',
+                xaxis_title='Month',
+                yaxis_title='Count',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab3:
         st.subheader("MQL Performance by Lead Source")
-        fig, ax = plt.subplots(figsize=(12, 6))
         mql_summary = mql_df.groupby('Lead_Source').agg({
             'Total_Leads': 'sum',
             'MQL_Count': 'sum'
         }).reset_index()
         mql_summary['Conversion_Rate'] = (mql_summary['MQL_Count'] / mql_summary['Total_Leads']) * 100
         
-        x = np.arange(len(mql_summary))
-        width = 0.35
-        ax.bar(x - width/2, mql_summary['Total_Leads'], width, label='Total Leads', alpha=0.7)
-        ax.bar(x + width/2, mql_summary['MQL_Count'], width, label='MQLs', alpha=0.7)
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
         
-        ax2 = ax.twinx()
-        ax2.plot(x, mql_summary['Conversion_Rate'], color='red', marker='o', linewidth=2, label='Conversion Rate')
-        ax2.set_ylabel('Conversion Rate (%)', color='red')
-        ax2.tick_params(axis='y', labelcolor='red')
+        # Add bars for counts
+        fig.add_trace(
+            go.Bar(x=mql_summary['Lead_Source'], y=mql_summary['Total_Leads'],
+                  name='Total Leads', marker_color='lightblue'),
+            secondary_y=False
+        )
+        fig.add_trace(
+            go.Bar(x=mql_summary['Lead_Source'], y=mql_summary['MQL_Count'],
+                  name='MQLs', marker_color='orange'),
+            secondary_y=False
+        )
         
-        ax.set_xlabel('Lead Source')
-        ax.set_ylabel('Count')
-        ax.set_xticks(x)
-        ax.set_xticklabels(mql_summary['Lead_Source'], rotation=45, ha='right')
-        ax.legend(loc='upper left')
-        ax2.legend(loc='upper right')
-        fig.tight_layout()
-        st.pyplot(fig)
+        # Add line for conversion rate
+        fig.add_trace(
+            go.Scatter(x=mql_summary['Lead_Source'], y=mql_summary['Conversion_Rate'],
+                      name='Conversion Rate', mode='lines+markers',
+                      line=dict(color='red', width=2)),
+            secondary_y=True
+        )
+        
+        fig.update_layout(
+            xaxis_title='Lead Source',
+            title='MQL Performance by Lead Source',
+            barmode='group',
+            height=500
+        )
+        fig.update_yaxes(title_text="Count", secondary_y=False)
+        fig.update_yaxes(title_text="Conversion Rate (%)", secondary_y=True)
+        
+        st.plotly_chart(fig, use_container_width=True)
 
 # PRODUCT EXPERIENCE DASHBOARD
 def show_product_experience_dashboard():
@@ -492,8 +483,6 @@ def show_product_experience_dashboard():
         
         with col1:
             st.subheader("NPS Score Trend by Touchpoint")
-            fig, ax = plt.subplots(figsize=(10, 5))
-            
             nps_by_touchpoint = product_nps_df.pivot_table(
                 index='Year_Quarter', 
                 columns='Touchpoint', 
@@ -508,20 +497,22 @@ def show_product_experience_dashboard():
                                                               categories=quarter_order, ordered=True)
             nps_by_touchpoint = nps_by_touchpoint.sort_values('Year_Quarter')
             
+            fig = go.Figure()
             touchpoints = [col for col in nps_by_touchpoint.columns if col != 'Year_Quarter']
+            for touchpoint in touchpoints:
+                fig.add_trace(go.Scatter(
+                    x=nps_by_touchpoint['Year_Quarter'],
+                    y=nps_by_touchpoint[touchpoint],
+                    mode='lines+markers',
+                    name=touchpoint
+                ))
             
-            for i, touchpoint in enumerate(touchpoints):
-                ax.plot(range(len(nps_by_touchpoint)), nps_by_touchpoint[touchpoint], 
-                       marker='o', linewidth=2, label=touchpoint)
-            
-            ax.set_xlabel('Quarter')
-            ax.set_ylabel('NPS Score')
-            ax.set_xticks(range(len(nps_by_touchpoint)))
-            ax.set_xticklabels(nps_by_touchpoint['Year_Quarter'], rotation=45)
-            ax.grid(True, alpha=0.3)
-            ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig.update_layout(
+                xaxis_title='Quarter',
+                yaxis_title='NPS Score',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("NPS Distribution")
@@ -531,15 +522,15 @@ def show_product_experience_dashboard():
             latest_data = product_nps_df[product_nps_df['Year_Quarter'] == latest_quarter]
             avg_distribution = latest_data[categories].mean().values
             
-            fig, ax = plt.subplots(figsize=(8, 5))
-            labels = ['Promoters', 'Passives', 'Detractors']
-            colors = ['#2ecc71', '#f39c12', '#e74c3c']
-            
-            wedges, texts, autotexts = ax.pie(avg_distribution, labels=labels, colors=colors,
-                                             autopct='%1.1f%%', startangle=90)
-            ax.set_title(f'NPS Distribution ({latest_quarter})', fontweight='bold')
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.pie(
+                values=avg_distribution,
+                names=['Promoters', 'Passives', 'Detractors'],
+                color=['Promoters', 'Passives', 'Detractors'],
+                color_discrete_map={'Promoters': '#2ecc71', 'Passives': '#f39c12', 'Detractors': '#e74c3c'},
+                title=f'NPS Distribution ({latest_quarter})'
+            )
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab2:
         st.subheader("Experience Metrics")
@@ -555,20 +546,15 @@ def show_product_experience_dashboard():
         experience_scores['Metric'] = experience_scores['Metric'].str.replace('_Score', '').str.replace('_', ' ')
         
         # Display as a bar chart
-        fig, ax = plt.subplots(figsize=(10, 5))
-        colors = plt.cm.Paired(np.linspace(0, 1, len(experience_scores)))
-        bars = ax.bar(experience_scores['Metric'], experience_scores['Average_Score'], color=colors)
-        ax.set_ylabel('Average Score (1-5)')
-        ax.set_ylim(3.5, 5)
-        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        
-        for bar, score in zip(bars, experience_scores['Average_Score']):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height + 0.05,
-                   f'{score:.2f}', ha='center', va='bottom', fontsize=10)
-        
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig = px.bar(experience_scores, x='Metric', y='Average_Score',
+                     text_auto='.2f', color='Metric')
+        fig.update_layout(
+            yaxis_title='Average Score (1-5)',
+            yaxis_range=[3.5, 5],
+            height=400,
+            showlegend=False
+        )
+        st.plotly_chart(fig, use_container_width=True)
         
         # Also show as a dataframe
         st.dataframe(experience_scores, use_container_width=True)
@@ -584,92 +570,94 @@ def show_partner_dashboard():
         
         with col1:
             st.subheader("Partner NPS Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             nps_trend = partner_nps_df.groupby('Year')['NPS_Score'].mean().reset_index()
-            
-            ax.plot(nps_trend['Year'], nps_trend['NPS_Score'], marker='o', 
-                   linewidth=2, markersize=8, color='#3498db')
-            ax.set_xlabel('Year')
-            ax.set_ylabel('Average NPS Score')
-            ax.grid(True, alpha=0.3)
-            
-            for i, row in nps_trend.iterrows():
-                ax.text(row['Year'], row['NPS_Score'] + 1, 
-                       f'{row["NPS_Score"]:.1f}', ha='center', fontsize=10)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(nps_trend, x='Year', y='NPS_Score',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Year',
+                yaxis_title='Average NPS Score',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Brand Perception by Partner Type")
-            fig, ax = plt.subplots(figsize=(10, 5))
             avg_scores = partner_nps_df.groupby('Partner_Type').agg({
                 'Brand_Awareness_Score': 'mean',
                 'Innovation_Leadership_Score': 'mean'
             }).reset_index()
             
-            x = np.arange(len(avg_scores))
-            width = 0.35
-            
-            ax.bar(x - width/2, avg_scores['Brand_Awareness_Score'], width, 
-                  label='Brand Awareness', alpha=0.7)
-            ax.bar(x + width/2, avg_scores['Innovation_Leadership_Score'], width, 
-                  label='Innovation Leadership', alpha=0.7)
-            
-            ax.set_xlabel('Partner Type')
-            ax.set_ylabel('Average Score')
-            ax.set_xticks(x)
-            ax.set_xticklabels(avg_scores['Partner_Type'], rotation=45, ha='right')
-            ax.legend()
-            ax.set_ylim(3.5, 5)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                x=avg_scores['Partner_Type'],
+                y=avg_scores['Brand_Awareness_Score'],
+                name='Brand Awareness',
+                marker_color='lightblue'
+            ))
+            fig.add_trace(go.Bar(
+                x=avg_scores['Partner_Type'],
+                y=avg_scores['Innovation_Leadership_Score'],
+                name='Innovation Leadership',
+                marker_color='orange'
+            ))
+            fig.update_layout(
+                barmode='group',
+                xaxis_title='Partner Type',
+                yaxis_title='Average Score',
+                yaxis_range=[3.5, 5],
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab2:
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Partner Brand Mentions Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             mentions_trend = partner_mentions_df.groupby('Date').agg({
                 'Mention_Count': 'sum',
                 'Estimated_Reach': 'sum'
             }).reset_index()
             
-            ax.plot(mentions_trend['Date'], mentions_trend['Mention_Count'], 
-                   marker='o', linewidth=2, color='#2ecc71', label='Mention Count')
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Mention Count', color='#2ecc71')
-            ax.tick_params(axis='y', labelcolor='#2ecc71')
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            fig.add_trace(
+                go.Scatter(x=mentions_trend['Date'], y=mentions_trend['Mention_Count'],
+                          mode='lines+markers', name='Mention Count',
+                          line=dict(color='#2ecc71', width=2)),
+                secondary_y=False
+            )
+            fig.add_trace(
+                go.Scatter(x=mentions_trend['Date'], y=mentions_trend['Estimated_Reach']/1000000,
+                          mode='lines+markers', name='Estimated Reach (M)',
+                          line=dict(color='#e74c3c', width=2)),
+                secondary_y=True
+            )
             
-            ax2 = ax.twinx()
-            ax2.plot(mentions_trend['Date'], mentions_trend['Estimated_Reach']/1000000, 
-                     marker='s', linewidth=2, color='#e74c3c', label='Estimated Reach (M)')
-            ax2.set_ylabel('Estimated Reach (Millions)', color='#e74c3c')
-            ax2.tick_params(axis='y', labelcolor='#e74c3c')
+            fig.update_layout(
+                xaxis_title='Month',
+                title='Partner Brand Mentions Trend',
+                height=400
+            )
+            fig.update_yaxes(title_text="Mention Count", secondary_y=False)
+            fig.update_yaxes(title_text="Estimated Reach (Millions)", secondary_y=True)
             
-            lines1, labels1 = ax.get_legend_handles_labels()
-            lines2, labels2 = ax2.get_legend_handles_labels()
-            ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
-            fig.tight_layout()
-            st.pyplot(fig)
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Brand Mentions by Partner")
-            fig, ax = plt.subplots(figsize=(10, 5))
             mentions_by_partner = partner_mentions_df.groupby('Partner_Name')['Mention_Count'].sum().reset_index()
             mentions_by_partner = mentions_by_partner.sort_values('Mention_Count', ascending=True)
             
-            colors = plt.cm.viridis(np.linspace(0.3, 0.9, len(mentions_by_partner)))
-            bars = ax.barh(mentions_by_partner['Partner_Name'], mentions_by_partner['Mention_Count'], color=colors)
-            ax.set_xlabel('Total Mention Count')
-            
-            for bar in bars:
-                width = bar.get_width()
-                ax.text(width + 5, bar.get_y() + bar.get_height()/2,
-                       f'{int(width)}', ha='left', va='center', fontsize=9)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.bar(mentions_by_partner, x='Mention_Count', y='Partner_Name',
+                        orientation='h', text_auto=True, color='Mention_Count',
+                        color_continuous_scale='viridis')
+            fig.update_layout(
+                xaxis_title='Total Mention Count',
+                yaxis_title='Partner Name',
+                height=400,
+                coloraxis_showscale=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab3:
         st.subheader("Partner NPS Score Heatmap")
@@ -680,13 +668,12 @@ def show_partner_dashboard():
             aggfunc='mean'
         )
         
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(partner_nps_pivot, annot=True, fmt='.1f', cmap='YlOrRd', 
-                   cbar_kws={'label': 'NPS Score'}, ax=ax)
-        ax.set_xlabel('Partner Type')
-        ax.set_ylabel('Region')
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig = px.imshow(partner_nps_pivot,
+                       text_auto='.1f',
+                       color_continuous_scale='YlOrRd',
+                       title='Partner NPS Score Heatmap')
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
 
 # INNOVATION DASHBOARD
 def show_innovation_dashboard():
@@ -699,31 +686,29 @@ def show_innovation_dashboard():
         
         with col1:
             st.subheader("Innovation Leadership Index Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             innovation_trend = innovation_df.groupby('Date')['Innovation_Leadership_Index'].mean().reset_index()
             
-            ax.plot(innovation_trend['Date'], innovation_trend['Innovation_Leadership_Index'], 
-                   marker='o', linewidth=2, color='#9b59b6')
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Innovation Leadership Index')
-            ax.grid(True, alpha=0.3)
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(innovation_trend, x='Date', y='Innovation_Leadership_Index',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Month',
+                yaxis_title='Innovation Leadership Index',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Total Innovation Mentions Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             mentions_trend = innovation_df.groupby('Date')['Total_Mentions'].sum().reset_index()
             
-            ax.plot(mentions_trend['Date'], mentions_trend['Total_Mentions'], 
-                   marker='o', linewidth=2, color='#e67e22')
-            ax.set_xlabel('Month')
-            ax.set_ylabel('Total Mentions')
-            ax.grid(True, alpha=0.3)
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(mentions_trend, x='Date', y='Total_Mentions',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Month',
+                yaxis_title='Total Mentions',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab2:
         st.subheader("Innovation Category Performance")
@@ -736,22 +721,27 @@ def show_innovation_dashboard():
             'Association_Share_Pct': 'mean'
         }).reset_index()
         
-        fig, ax = plt.subplots(figsize=(12, 6))
-        x = np.arange(len(category_performance))
-        width = 0.35
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=category_performance['Innovation_Category'],
+            y=category_performance['Innovation_Leadership_Index'],
+            name='Leadership Index',
+            marker_color='lightblue'
+        ))
+        fig.add_trace(go.Bar(
+            x=category_performance['Innovation_Category'],
+            y=category_performance['Association_Share_Pct'],
+            name='Association Share %',
+            marker_color='orange'
+        ))
         
-        bars1 = ax.bar(x - width/2, category_performance['Innovation_Leadership_Index'], 
-                      width, label='Leadership Index', alpha=0.7)
-        bars2 = ax.bar(x + width/2, category_performance['Association_Share_Pct'], 
-                      width, label='Association Share %', alpha=0.7)
-        
-        ax.set_xlabel('Innovation Category')
-        ax.set_ylabel('Score / Percentage')
-        ax.set_xticks(x)
-        ax.set_xticklabels(category_performance['Innovation_Category'], rotation=45, ha='right')
-        ax.legend()
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig.update_layout(
+            barmode='group',
+            xaxis_title='Innovation Category',
+            yaxis_title='Score / Percentage',
+            height=500
+        )
+        st.plotly_chart(fig, use_container_width=True)
     
     with tab3:
         st.subheader("Sentiment Analysis")
@@ -762,23 +752,23 @@ def show_innovation_dashboard():
         
         sentiment_by_category = latest_innovation.groupby('Innovation_Category')[sentiment_cols].mean().reset_index()
         
-        fig, ax = plt.subplots(figsize=(12, 6))
-        x = np.arange(len(sentiment_by_category))
-        bottom = np.zeros(len(sentiment_by_category))
-        
+        fig = go.Figure()
         colors = ['#2ecc71', '#e74c3c', '#f39c12']
         for i, col in enumerate(sentiment_cols):
-            ax.bar(x, sentiment_by_category[col], bottom=bottom, 
-                  label=col.replace('_Sentiment_Pct', ''), color=colors[i])
-            bottom += sentiment_by_category[col].values
+            fig.add_trace(go.Bar(
+                x=sentiment_by_category['Innovation_Category'],
+                y=sentiment_by_category[col],
+                name=col.replace('_Sentiment_Pct', ''),
+                marker_color=colors[i]
+            ))
         
-        ax.set_xlabel('Innovation Category')
-        ax.set_ylabel('Sentiment Percentage')
-        ax.set_xticks(x)
-        ax.set_xticklabels(sentiment_by_category['Innovation_Category'], rotation=45, ha='right')
-        ax.legend(title='Sentiment')
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig.update_layout(
+            barmode='stack',
+            xaxis_title='Innovation Category',
+            yaxis_title='Sentiment Percentage',
+            height=500
+        )
+        st.plotly_chart(fig, use_container_width=True)
 
 # CREATOR DASHBOARD
 def show_creator_dashboard():
@@ -791,44 +781,39 @@ def show_creator_dashboard():
         
         with col1:
             st.subheader("Average NPS by Content Type")
-            fig, ax = plt.subplots(figsize=(10, 5))
             nps_by_content = creator_nps_df.groupby('Content_Type')['NPS_Score'].mean().reset_index()
             nps_by_content = nps_by_content.sort_values('NPS_Score', ascending=False)
             
-            colors = plt.cm.Set2(np.linspace(0, 1, len(nps_by_content)))
-            bars = ax.bar(nps_by_content['Content_Type'], nps_by_content['NPS_Score'], color=colors)
-            ax.set_xlabel('Content Type')
-            ax.set_ylabel('Average NPS Score')
-            ax.set_ylim(0, 60)
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-            
-            for bar, score in zip(bars, nps_by_content['NPS_Score']):
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 1,
-                       f'{score:.1f}', ha='center', va='bottom', fontsize=10)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.bar(nps_by_content, x='Content_Type', y='NPS_Score',
+                        text_auto='.1f', color='Content_Type')
+            fig.update_layout(
+                xaxis_title='Content Type',
+                yaxis_title='Average NPS Score',
+                yaxis_range=[0, 60],
+                height=400,
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Creator NPS Trend")
-            fig, ax = plt.subplots(figsize=(10, 5))
             creator_nps_df['Quarter'] = creator_nps_df['Date']
             nps_trend = creator_nps_df.groupby('Quarter')['NPS_Score'].mean().reset_index()
             
+            # Sort chronologically
             quarter_order = ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023', 
                            'Q1 2024', 'Q2 2024', 'Q3 2024', 'Q4 2024']
             nps_trend['Quarter'] = pd.Categorical(nps_trend['Quarter'], categories=quarter_order, ordered=True)
             nps_trend = nps_trend.sort_values('Quarter')
             
-            ax.plot(range(len(nps_trend)), nps_trend['NPS_Score'], marker='o', 
-                   linewidth=2, color='#3498db')
-            ax.set_xlabel('Quarter')
-            ax.set_ylabel('Average NPS Score')
-            ax.set_xticks(range(len(nps_trend)))
-            ax.set_xticklabels(nps_trend['Quarter'], rotation=45)
-            ax.grid(True, alpha=0.3)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.line(nps_trend, x='Quarter', y='NPS_Score',
+                         markers=True, line_shape='linear')
+            fig.update_layout(
+                xaxis_title='Quarter',
+                yaxis_title='Average NPS Score',
+                height=400
+            )
+            st.plotly_chart(fig, use_container_width=True)
     
     with tab2:
         st.subheader("Program Evaluation by Content Type")
@@ -838,65 +823,65 @@ def show_creator_dashboard():
             'Workflow_Efficiency_Score': 'mean'
         }).reset_index()
         
-        fig, ax = plt.subplots(figsize=(12, 6))
-        x = np.arange(len(avg_scores))
-        width = 0.35
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            x=avg_scores['Content_Type'],
+            y=avg_scores['Program_Value_Score'],
+            name='Program Value',
+            marker_color='lightblue'
+        ))
+        fig.add_trace(go.Bar(
+            x=avg_scores['Content_Type'],
+            y=avg_scores['Workflow_Efficiency_Score'],
+            name='Workflow Efficiency',
+            marker_color='orange'
+        ))
         
-        ax.bar(x - width/2, avg_scores['Program_Value_Score'], width, 
-              label='Program Value', alpha=0.7)
-        ax.bar(x + width/2, avg_scores['Workflow_Efficiency_Score'], width, 
-              label='Workflow Efficiency', alpha=0.7)
-        
-        ax.set_xlabel('Content Type')
-        ax.set_ylabel('Average Score')
-        ax.set_xticks(x)
-        ax.set_xticklabels(avg_scores['Content_Type'], rotation=45, ha='right')
-        ax.legend()
-        ax.set_ylim(3.5, 5)
-        fig.tight_layout()
-        st.pyplot(fig)
+        fig.update_layout(
+            barmode='group',
+            xaxis_title='Content Type',
+            yaxis_title='Average Score',
+            yaxis_range=[3.5, 5],
+            height=500
+        )
+        st.plotly_chart(fig, use_container_width=True)
     
     with tab3:
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("NPS Score by Cohort")
-            fig, ax = plt.subplots(figsize=(10, 5))
             cohort_performance = creator_nps_df.groupby('Cohort')['NPS_Score'].mean().reset_index()
             cohort_order = ['Cohort 1', 'Cohort 2', 'Cohort 3', 'Cohort 4']
             cohort_performance['Cohort'] = pd.Categorical(cohort_performance['Cohort'], 
                                                         categories=cohort_order, ordered=True)
             cohort_performance = cohort_performance.sort_values('Cohort')
             
-            colors = plt.cm.viridis(np.linspace(0.2, 0.8, len(cohort_performance)))
-            bars = ax.bar(cohort_performance['Cohort'], cohort_performance['NPS_Score'], color=colors)
-            ax.set_xlabel('Cohort')
-            ax.set_ylabel('Average NPS Score')
-            ax.set_ylim(0, 60)
-            
-            for bar, score in zip(bars, cohort_performance['NPS_Score']):
-                height = bar.get_height()
-                ax.text(bar.get_x() + bar.get_width()/2., height + 1,
-                       f'{score:.1f}', ha='center', va='bottom', fontsize=10)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.bar(cohort_performance, x='Cohort', y='NPS_Score',
+                        text_auto='.1f', color='Cohort')
+            fig.update_layout(
+                yaxis_title='Average NPS Score',
+                yaxis_range=[0, 60],
+                height=400,
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.subheader("Total Survey Responses by Content Type")
-            fig, ax = plt.subplots(figsize=(10, 5))
             response_by_type = creator_nps_df.groupby('Content_Type')['Response_Count'].sum().reset_index()
             response_by_type = response_by_type.sort_values('Response_Count', ascending=True)
             
-            colors = plt.cm.coolwarm(np.linspace(0.2, 0.8, len(response_by_type)))
-            bars = ax.barh(response_by_type['Content_Type'], response_by_type['Response_Count'], color=colors)
-            ax.set_xlabel('Total Response Count')
-            
-            for bar in bars:
-                width = bar.get_width()
-                ax.text(width + 2, bar.get_y() + bar.get_height()/2,
-                       f'{int(width)}', ha='left', va='center', fontsize=9)
-            fig.tight_layout()
-            st.pyplot(fig)
+            fig = px.bar(response_by_type, x='Response_Count', y='Content_Type',
+                        orientation='h', text_auto=True, color='Response_Count',
+                        color_continuous_scale='coolwarm')
+            fig.update_layout(
+                xaxis_title='Total Response Count',
+                yaxis_title='Content Type',
+                height=400,
+                coloraxis_showscale=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
 
 # Main app routing
 if dashboard_choice == "📊 Executive Summary":
