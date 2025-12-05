@@ -771,6 +771,7 @@ def show_innovation_dashboard():
         st.plotly_chart(fig, use_container_width=True)
 
 # CREATOR DASHBOARD
+# CREATOR DASHBOARD - FIXED VERSION
 def show_creator_dashboard():
     st.markdown('<h2 class="sub-header">🎨 Creator Advocacy</h2>', unsafe_allow_html=True)
     
@@ -785,13 +786,15 @@ def show_creator_dashboard():
             nps_by_content = nps_by_content.sort_values('NPS_Score', ascending=False)
             
             fig = px.bar(nps_by_content, x='Content_Type', y='NPS_Score',
-                        text_auto='.1f', color='Content_Type')
+                        text_auto='.1f', color='NPS_Score',
+                        color_continuous_scale='Viridis')
             fig.update_layout(
                 xaxis_title='Content Type',
                 yaxis_title='Average NPS Score',
                 yaxis_range=[0, 60],
                 height=400,
-                showlegend=False
+                showlegend=False,
+                coloraxis_showscale=False
             )
             st.plotly_chart(fig, use_container_width=True)
         
@@ -872,14 +875,18 @@ def show_creator_dashboard():
             response_by_type = creator_nps_df.groupby('Content_Type')['Response_Count'].sum().reset_index()
             response_by_type = response_by_type.sort_values('Response_Count', ascending=True)
             
-            fig = px.bar(response_by_type, x='Response_Count', y='Content_Type',
-                        orientation='h', text_auto=True, color='Response_Count',
-                        color_continuous_scale='coolwarm')
+            # FIXED: Using categorical color instead of continuous
+            fig = px.bar(response_by_type, 
+                        x='Response_Count', 
+                        y='Content_Type',
+                        orientation='h', 
+                        text_auto=True,
+                        color='Content_Type')
             fig.update_layout(
                 xaxis_title='Total Response Count',
                 yaxis_title='Content Type',
                 height=400,
-                coloraxis_showscale=False
+                showlegend=False
             )
             st.plotly_chart(fig, use_container_width=True)
 
