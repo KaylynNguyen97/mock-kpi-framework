@@ -1,4 +1,4 @@
-# app.py - COMPLETE VERSION FOR QUICK TESTING (Simulated Data)
+# app.py - COMPLETE VERSION FOR QUICK TESTING (Simulated Data) - FIXED
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -264,8 +264,8 @@ partner_mentions_df = data.get('Partner_Brand_Mentions', pd.DataFrame())
 creator_nps_df = data.get('Creator_Lab_NPS', pd.DataFrame())
 innovation_df = data.get('Innovation_Leadership_Index', pd.DataFrame())
 
-# Set up plotting style
-plt.style.use('seaborn-v0_8-darkgrid')
+# Set up plotting style - FIXED: Changed from seaborn-v0_8-darkgrid to default
+plt.style.use('default')
 sns.set_palette("husl")
 
 # EXECUTIVE SUMMARY DASHBOARD
@@ -358,7 +358,9 @@ def show_executive_summary():
         ax.set_xticks(range(len(brand_health_summary)))
         ax.set_xticklabels(brand_health_summary['Date'], rotation=45)
         ax.grid(True, alpha=0.3)
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with col2:
         st.subheader("MQL Conversion Trend")
@@ -370,7 +372,9 @@ def show_executive_summary():
         ax.set_ylabel('Conversion Rate (%)')
         ax.grid(True, alpha=0.3)
         plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
 
 # MARKET POSITION DASHBOARD
 def show_market_position_dashboard():
@@ -392,7 +396,9 @@ def show_market_position_dashboard():
             ax.set_xticks(range(len(brand_health_summary)))
             ax.set_xticklabels(brand_health_summary['Date'], rotation=45)
             ax.grid(True, alpha=0.3)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Lead Score Trend")
@@ -404,7 +410,9 @@ def show_market_position_dashboard():
             ax.set_ylabel('Average Lead Score')
             ax.grid(True, alpha=0.3)
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab2:
         col1, col2 = st.columns(2)
@@ -424,7 +432,9 @@ def show_market_position_dashboard():
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height + 0.5,
                        f'{height:.1f}', ha='center', va='bottom', fontsize=10)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("MQL Volume by Month")
@@ -445,7 +455,9 @@ def show_market_position_dashboard():
             ax.set_xticks(x)
             ax.set_xticklabels([str(d)[:7] for d in mql_volume['Date']], rotation=45)
             ax.legend()
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab3:
         st.subheader("MQL Performance by Lead Source")
@@ -461,18 +473,21 @@ def show_market_position_dashboard():
         ax.bar(x - width/2, mql_summary['Total_Leads'], width, label='Total Leads', alpha=0.7)
         ax.bar(x + width/2, mql_summary['MQL_Count'], width, label='MQLs', alpha=0.7)
         
-        ax4 = ax.twinx()
-        ax4.plot(x, mql_summary['Conversion_Rate'], color='red', marker='o', linewidth=2, label='Conversion Rate')
-        ax4.set_ylabel('Conversion Rate (%)', color='red')
-        ax4.tick_params(axis='y', labelcolor='red')
+        # FIXED: Changed ax4 to ax2 for consistency
+        ax2 = ax.twinx()
+        ax2.plot(x, mql_summary['Conversion_Rate'], color='red', marker='o', linewidth=2, label='Conversion Rate')
+        ax2.set_ylabel('Conversion Rate (%)', color='red')
+        ax2.tick_params(axis='y', labelcolor='red')
         
         ax.set_xlabel('Lead Source')
         ax.set_ylabel('Count')
         ax.set_xticks(x)
         ax.set_xticklabels(mql_summary['Lead_Source'], rotation=45, ha='right')
         ax.legend(loc='upper left')
-        ax4.legend(loc='upper right')
+        ax2.legend(loc='upper right')
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
 
 # PRODUCT EXPERIENCE DASHBOARD
 def show_product_experience_dashboard():
@@ -516,7 +531,9 @@ def show_product_experience_dashboard():
             ax.set_xticklabels(nps_by_touchpoint['Year_Quarter'], rotation=45)
             ax.grid(True, alpha=0.3)
             ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("NPS Distribution")
@@ -533,7 +550,9 @@ def show_product_experience_dashboard():
             wedges, texts, autotexts = ax.pie(avg_distribution, labels=labels, colors=colors,
                                              autopct='%1.1f%%', startangle=90)
             ax.set_title(f'NPS Distribution ({latest_quarter})', fontweight='bold')
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab2:
         st.subheader("Experience Metrics")
@@ -561,7 +580,9 @@ def show_product_experience_dashboard():
             ax.text(bar.get_x() + bar.get_width()/2., height + 0.05,
                    f'{score:.2f}', ha='center', va='bottom', fontsize=10)
         
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
         
         # Also show as a dataframe
         st.dataframe(experience_scores, use_container_width=True)
@@ -589,7 +610,9 @@ def show_partner_dashboard():
             for i, row in nps_trend.iterrows():
                 ax.text(row['Year'], row['NPS_Score'] + 1, 
                        f'{row["NPS_Score"]:.1f}', ha='center', fontsize=10)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Brand Perception by Partner Type")
@@ -613,7 +636,9 @@ def show_partner_dashboard():
             ax.set_xticklabels(avg_scores['Partner_Type'], rotation=45, ha='right')
             ax.legend()
             ax.set_ylim(3.5, 5)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab2:
         col1, col2 = st.columns(2)
@@ -642,7 +667,9 @@ def show_partner_dashboard():
             lines1, labels1 = ax.get_legend_handles_labels()
             lines2, labels2 = ax4b.get_legend_handles_labels()
             ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Brand Mentions by Partner")
@@ -658,7 +685,9 @@ def show_partner_dashboard():
                 width = bar.get_width()
                 ax.text(width + 5, bar.get_y() + bar.get_height()/2,
                        f'{int(width)}', ha='left', va='center', fontsize=9)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab3:
         st.subheader("Partner NPS Score Heatmap")
@@ -674,7 +703,9 @@ def show_partner_dashboard():
                    cbar_kws={'label': 'NPS Score'}, ax=ax)
         ax.set_xlabel('Partner Type')
         ax.set_ylabel('Region')
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
 
 # INNOVATION DASHBOARD
 def show_innovation_dashboard():
@@ -696,7 +727,9 @@ def show_innovation_dashboard():
             ax.set_ylabel('Innovation Leadership Index')
             ax.grid(True, alpha=0.3)
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Total Innovation Mentions Trend")
@@ -709,7 +742,9 @@ def show_innovation_dashboard():
             ax.set_ylabel('Total Mentions')
             ax.grid(True, alpha=0.3)
             plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab2:
         st.subheader("Innovation Category Performance")
@@ -736,7 +771,9 @@ def show_innovation_dashboard():
         ax.set_xticks(x)
         ax.set_xticklabels(category_performance['Innovation_Category'], rotation=45, ha='right')
         ax.legend()
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab3:
         st.subheader("Sentiment Analysis")
@@ -762,7 +799,9 @@ def show_innovation_dashboard():
         ax.set_xticks(x)
         ax.set_xticklabels(sentiment_by_category['Innovation_Category'], rotation=45, ha='right')
         ax.legend(title='Sentiment')
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
 
 # CREATOR DASHBOARD
 def show_creator_dashboard():
@@ -790,7 +829,9 @@ def show_creator_dashboard():
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height + 1,
                        f'{score:.1f}', ha='center', va='bottom', fontsize=10)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Creator NPS Trend")
@@ -810,7 +851,9 @@ def show_creator_dashboard():
             ax.set_xticks(range(len(nps_trend)))
             ax.set_xticklabels(nps_trend['Quarter'], rotation=45)
             ax.grid(True, alpha=0.3)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab2:
         st.subheader("Program Evaluation by Content Type")
@@ -835,7 +878,9 @@ def show_creator_dashboard():
         ax.set_xticklabels(avg_scores['Content_Type'], rotation=45, ha='right')
         ax.legend()
         ax.set_ylim(3.5, 5)
+        plt.tight_layout()  # FIXED: Added tight_layout
         st.pyplot(fig)
+        plt.close()  # FIXED: Close figure to prevent memory leaks
     
     with tab3:
         col1, col2 = st.columns(2)
@@ -859,7 +904,9 @@ def show_creator_dashboard():
                 height = bar.get_height()
                 ax.text(bar.get_x() + bar.get_width()/2., height + 1,
                        f'{score:.1f}', ha='center', va='bottom', fontsize=10)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
         
         with col2:
             st.subheader("Total Survey Responses by Content Type")
@@ -875,7 +922,9 @@ def show_creator_dashboard():
                 width = bar.get_width()
                 ax.text(width + 2, bar.get_y() + bar.get_height()/2,
                        f'{int(width)}', ha='left', va='center', fontsize=9)
+            plt.tight_layout()  # FIXED: Added tight_layout
             st.pyplot(fig)
+            plt.close()  # FIXED: Close figure to prevent memory leaks
 
 # Main app routing
 if dashboard_choice == "📊 Executive Summary":
